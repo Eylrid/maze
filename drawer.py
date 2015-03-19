@@ -38,14 +38,14 @@ class MazeDrawer:
                 cell = self.maze.cells[x][y]
                 if y < self.height-1:
                     below = self.maze.cells[x][y+1]
-                    if below not in cell.connected_neighbors:
+                    if below not in self.maze.connected_neighbors_map[cell.x][cell.y]:
                         self.canvas.draw_line((x*self.blocksize, (y+1)*self.blocksize,
                                                (x+1)*self.blocksize, (y+1)*self.blocksize), 
                                               fill=self.wallcolor, tag='wall')
 
                 if x < self.width-1:
                     right = self.maze.cells[x+1][y]
-                    if right not in cell.connected_neighbors:
+                    if right not in self.maze.connected_neighbors_map[cell.x][cell.y]:
                         self.canvas.draw_line(((x+1)*self.blocksize, y*self.blocksize,
                                                (x+1)*self.blocksize, (y+1)*self.blocksize), 
                                               fill=self.wallcolor, tag='wall')

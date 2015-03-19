@@ -4,25 +4,11 @@ class Cell:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.neighbors = []
-        self.connected_neighbors = []
-        self.connectable_neighbors = []
         self.frontier = False
         self.closed = False
 
     def __repr__(self):
         return '<cell (%d, %d)>' %(self.x, self.y)
-
-    def add_neighbor(self, other):
-        self.neighbors.append(other)
-        self.connectable_neighbors.append(other)
-
-    def connect(self, other):
-        if other not in self.connectable_neighbors:
-            raise IndexError('other not in connectable neighbors')
-
-        self.connectable_neighbors.remove(other)
-        self.connected_neighbors.append(other)
 
     def dist(self, other):
         return abs(self.x-other.x) + abs(self.y-other.y)
@@ -41,9 +27,23 @@ class Maze:
     def __init__(self, width, height):
         self.width = width
         self.height = height
+        self.neighbors_map = [[[] for y in range(self.height)] for x in range(self.width)]
+        self.connected_neighbors_map = [[[] for y in range(self.height)] for x in range(self.width)]
+        self.connectable_neighbors_map = [[[] for y in range(self.height)] for x in range(self.width)]
         self.create_cells()
         self.add_neighbors()
         self.connect()
+
+    def add_neighbor(self, cella, cellb):
+        self.neighbors_map[cella.x][cella.y].append(cellb)
+        self.connectable_neighbors_map[cella.x][cella.y].append(cellb)
+
+    def connect_neighbor(self, cella, cellb):
+        if cellb not in self.connectable_neighbors_map[cella.x][cella.y]:
+            raise IndexError('other not in connectable neighbors')
+
+        self.connectable_neighbors_map[cella.x][cella.y].remove(cellb)
+        self.connected_neighbors_map[cella.x][cella.y].append(cellb)
 
     def create_cells(self):
         self.cells = []
@@ -79,7 +79,7 @@ class Maze:
                     x2 = x + dx
                     y2 = y + dy
                     cell2 = self.cells[x2][y2]
-                    cell1.add_neighbor(cell2)
+                    self.add_neighbor(cell1, cell2)
 
     def connect(self):
         cell = random.choice(self.all_cells)
@@ -87,14 +87,14 @@ class Maze:
         cell.frontier = True
         closed = []
         while frontier:
-            expand = frontier[-1] #random.choice(frontier)
-            if expand.connectable_neighbors:
-                other = random.choice(expand.connectable_neighbors)
+            expand = frontier[-1]
+            if self.connectable_neighbors_map[expand.x][expand.y]:
+                other = random.choice(self.connectable_neighbors_map[expand.x][expand.y])
                 if other.frontier or other.closed:
-                    expand.connectable_neighbors.remove(other)
+                    self.connectable_neighbors_map[expand.x][expand.y].remove(other)
                 else:
-                    expand.connect(other)
-                    other.connect(expand)
+                    self.connect_neighbor(expand, other)
+                    self.connect_neighbor(other, expand)
                     frontier.append(other)
                     other.frontier = True
             else:
@@ -113,7 +113,6 @@ class Maze:
         startloc = AStarLoc(start_cell, 0, start_cell.dist(end_cell))
         frontier = [startloc]
         status_map = [['o' for y in range(self.height)] for x in range(self.width)]
-        #import pdb; pdb.set_trace()
         status_map[start_cell.x][start_cell.y] = 'f'
         endfound = False
         while frontier:
@@ -122,7 +121,7 @@ class Maze:
             cell = loc.object
             status_map[cell.x][cell.y] = 'c'
             newf = loc.f + 1
-            for neighbor in cell.connected_neighbors:
+            for neighbor in self.connected_neighbors_map[cell.x][cell.y]:
                 newloc = AStarLoc(neighbor, newf,
                                   neighbor.dist(end_cell),
                                   loc)

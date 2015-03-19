@@ -4,7 +4,7 @@ import random
 import pickle, os
 from drawer import MazeDrawer, Canvas
 from maze import Maze
-from game import Game
+from game import Game, Seed
 import math
 TAU = math.pi*2
 
@@ -164,7 +164,7 @@ class App(Tkinter.Frame):
 
         cell = self.game.maze.cells[blockx][blocky]
         nextcell = self.game.maze.cells[nextx][nexty]
-        if nextcell in cell.connected_neighbors:
+        if nextcell in self.game.maze.connected_neighbors_map[cell.x][cell.y]:
             wall_point, newdist, direction =  self.get_next_wall(wall_point[0], wall_point[1],
                                                       angle, nextx, nexty)
             distance += newdist
@@ -289,7 +289,7 @@ class App(Tkinter.Frame):
         oldblocky = self.mouse_to_block(self.game.player.y)
         oldcell = self.game.maze.cells[oldblockx][oldblocky]
         newcell = self.game.maze.cells[newblockx][newblocky]
-        if newcell == oldcell or newcell in oldcell.connected_neighbors:
+        if newcell == oldcell or newcell in self.game.maze.connected_neighbors_map[oldcell.x][oldcell.y]:
             return True
         else:
             return False
