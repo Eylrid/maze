@@ -7,6 +7,7 @@ from maze import Maze
 from game import Game, Seed
 import math
 TAU = math.pi*2
+SAVEFILE = 'save.pkl'
 
 class CanvasCanvas(Canvas):
     def __init__(self, canvas):
@@ -31,7 +32,6 @@ class App(Tkinter.Frame):
         self.canvas_height = self.game.height*self.game.blocksize + 1
         self.block = (0, 0)
         self.create_widgets()
-        self.game.maze = Maze(self.game.width, self.game.height)
         self.draw_canvas = CanvasCanvas(self.canvas)
         self.drawer = MazeDrawer(self.draw_canvas, self.game.maze, self.game.blocksize)
         self.create_player()
@@ -76,6 +76,10 @@ class App(Tkinter.Frame):
 
         self.chromosomelabel = Tkinter.Label(self.chromosomeframe, text='')
         self.chromosomelabel.grid(row=1, column=0)
+
+    def save(self):
+        with open(SAVEFILE, 'w') as file:
+            pickle.dump(self.game, file)
 
     def create_player(self):
         self.create_viewlines()
@@ -277,6 +281,7 @@ class App(Tkinter.Frame):
         self.game.player.move(*args, **kwargs)
         self.seed_step()
         self.update_player()
+        self.save()
 
     def player_can_move(self, *args, **kwargs):
         x, y, angle = self.game.player.relative_point(*args, **kwargs)
@@ -342,7 +347,14 @@ def main():
 
     rt = Tkinter.Tk()
     rt.protocol("WM_DELETE_WINDOW", on_quit)
-    game = Game()
+    if os.path.exists(SAVEFILE):
+        with open(SAVEFILE, 'r') as file:
+            game = pickle.load(file)
+    else:
+        game = Game()
+        with open(SAVEFILE, 'w') as file:
+            pickle.dump(game, file)
+
     app = App(rt, game)
     app.grid()
     while not exitFlag:
