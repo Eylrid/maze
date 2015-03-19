@@ -1,13 +1,13 @@
+from maze import Maze
 import random
 import math
 TAU = math.pi*2
 
 class Seed:
     CHROMOSOMELENGTH = 28
-    def __init__(self, x, y, item, energy=0., chromosome=None):
+    def __init__(self, x, y, energy=0., chromosome=None):
         self.x = x
         self.y = y
-        self.item = item
         self.energy = energy
         self.process_chromosome(chromosome)
 
@@ -50,8 +50,27 @@ class Game:
         self.width = width
         self.height = height
         self.blocksize = blocksize
-        self.block = (0, 0)
         self.selected_seeds = []
-        #self.maze = Maze(self.width, self.height)
-        #self.create_player()
-        #self.create_seeds()
+        self.maze = Maze(self.width, self.height)
+        self.create_player()
+        self.create_seeds()
+
+    def create_player(self):
+        self.player = Player(self.blocksize/2., self.blocksize/2., TAU/8)
+
+    def create_seeds(self):
+        self.seeds = []
+        self.seed_map = [[[] for y in range(self.height)] for x in range(self.width)]
+        self.create_seed(random.randint(0, self.width-1),
+                         random.randint(0, self.height-1))
+
+    def create_seed(self, x, y, chromosome=None):
+        seed = Seed(x, y, chromosome=chromosome)
+        self.seeds.append(seed)
+        self.seed_map[x][y].append(seed)
+        return seed
+
+    def remove_seed(self, seed):
+        self.seeds.remove(seed)
+        self.seed_map[seed.x][seed.y].remove(seed)
+
