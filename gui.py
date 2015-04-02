@@ -273,7 +273,7 @@ class App(Tkinter.Frame):
                 print 'Seed:'
                 print '-chromosome:', seed.chromosome
                 print '-color:', seed.color
-                print '-mutation rate: %d/16' %seed.mutability
+                print '-mutation rate: %d/16' %seed.mutability()
         self.game.selected_seeds = seeds
         self.check_chromosome()
 

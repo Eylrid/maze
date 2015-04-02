@@ -11,6 +11,9 @@ class Seed:
         self.energy = energy
         self.process_chromosome(chromosome)
 
+    def mutability(self):
+        return int(self.chromosome[24:], 2)+1
+
     def process_chromosome(self, chromosome):
         if chromosome:
             if len(chromosome) != Seed.CHROMOSOMELENGTH:
@@ -20,8 +23,7 @@ class Seed:
         else:
             self.chromosome = ''.join([random.choice(('0','1')) for i in range(Seed.CHROMOSOMELENGTH)])
 
-        self.mutability = int(self.chromosome[24:], 2)+1
-        if random.randint(0,16) < self.mutability:
+        if random.randint(0,16) < self.mutability():
             mutationpoint = random.randint(0, Seed.CHROMOSOMELENGTH-1)
             mutation = random.choice(('0','1'))
             self.chromosome = self.chromosome[:mutationpoint] + mutation + self.chromosome[mutationpoint+1:]
