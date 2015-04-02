@@ -31,6 +31,7 @@ class App(Tkinter.Frame):
         self.canvas_width = self.game.width*self.game.blocksize + 1
         self.canvas_height = self.game.height*self.game.blocksize + 1
         self.block = (0, 0)
+        self.save_count = 0
         self.create_widgets()
         self.draw_canvas = CanvasCanvas(self.canvas)
         self.drawer = MazeDrawer(self.draw_canvas, self.game.maze, self.game.blocksize)
@@ -281,7 +282,10 @@ class App(Tkinter.Frame):
         self.game.player.move(*args, **kwargs)
         self.seed_step()
         self.update_player()
-        self.save()
+        self.save_count += 1
+        if self.save_count >= 10:
+            self.save()
+            self.save_count = 0
 
     def player_can_move(self, *args, **kwargs):
         x, y, angle = self.game.player.relative_point(*args, **kwargs)
