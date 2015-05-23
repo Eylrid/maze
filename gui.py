@@ -2,6 +2,7 @@ import maze, image
 import Tkinter, ImageTk
 import random
 import pickle, os
+import re
 from drawer import MazeDrawer, Canvas
 from maze import Maze
 from game import Game, Seed
@@ -108,7 +109,7 @@ class App(Tkinter.Frame):
     def create_viewlines(self):
         angles = self.get_viewangles()
         endpoints = [self.get_view_line_endpoints(a) for a in angles]
-        self.viewlines = [self.canvas.create_line(self.game.player.x, self.game.player.y, x, y, fill='black') for x, y in endpoints]
+        self.viewlines = [self.canvas.create_line(self.game.player.x, self.game.player.y, x, y, fill='#808080') for x, y in endpoints]
 
     def create_3d_lines(self):
         self.threedlines = []
@@ -261,7 +262,7 @@ class App(Tkinter.Frame):
     def click(self, event):
         block = self.event_block(event)
         if not block: return
-        self.draw_path((self.block[0], self.block[1], block[0], block[1]))
+        #self.draw_path((self.block[0], self.block[1], block[0], block[1]))
         self.block = block
         self.seed_info()
 
@@ -327,18 +328,27 @@ class App(Tkinter.Frame):
 
     def check_chromosome(self, *args):
         chromosome = self.chromosomevar.get()
+        chromosome = self.normalize_chromosome(chromosome)
         if self.valid_chromosome(chromosome):
-            scores = []
+            scores = {}
             for seed in self.game.selected_seeds:
                 match = self.xor(seed.chromosome, chromosome)
                 score = match.count('1')
-                scores.append(str(score))
-            self.chromosomelabel['text'] = ', '.join(scores)
+                scores[score] = scores.get(score, 0) + 1
+            histogram = ['%d*%d'%(s,scores[s]) for s in scores]
+            self.chromosomelabel['text'] = ', '.join(histogram)
         else:
             self.chromosomelabel['text'] = ''
 
+    def normalize_chromosome(self, chromosome):
+        if re.match(r'[\dabcdef]+$', chromosome):
+            # Hexadecimal
+            return bin(int(chromosome, 16))[2:].rjust(len(chromosome)*4,'0')
+        else:
+            return chromosome
+
     def valid_chromosome(self, chromosome):
-        return len(chromosome)==Seed.CHROMOSOMELENGTH and all([c in '01' for c in chromosome])
+        return len(chromosome)==Seed.CHROMOSOMELENGTH and re.match(r'[01]+$', chromosome)
 
 
 def main():
